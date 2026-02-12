@@ -2,22 +2,17 @@
   "name": "email-tracker",
   "version": "1.0.0",
   "description": "Tracks email sent from your email address using this app",
-  "license": "ISC",
   "author": "Arya",
+  "license": "ISC",
   "type": "commonjs",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "dev": "vercel dev",
+    "start": "node app.js"
   },
   "dependencies": {
-    "crypto": "^1.0.1",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
-    "firebase": "^12.9.0",
     "firebase-admin": "^13.6.1",
-    "nodemailer": "^8.0.1",
-    "nodemon": "^3.1.11"
+    "nodemailer": "^8.0.1"
   }
 }
