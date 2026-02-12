@@ -3,23 +3,29 @@ const transporter = require("./emailConfig");
 const { createEmailAnalytics } = require("../services/analyticsService");
 
 async function sendTrackedEmail(email, trackingId, subject, htmlBody) {
-    // Create tracking pixel
-    const trackingPixel = `<img src="${process.env.BASE_URL}/track?id=${trackingId}" width="1" height="1" style="display:none;" />`;
 
-    // Inject tracking pixel into user-provided HTML body
+    // Create analytics FIRST
+    await createEmailAnalytics(trackingId, subject);
+
+    const trackingPixel = `
+      <img src="${process.env.BASE_URL}/track?id=${trackingId}}"
+           width="1"
+           height="1"
+           style="display:none;" />
+    `;
+
     const htmlWithTracking = `${htmlBody}${trackingPixel}`;
-
 
     const mailOptions = {
         from: process.env.SENDER_EMAIL,
         to: email,
         subject: subject,
         html: htmlWithTracking,
-        text: htmlBody.replace(/<[^>]*>/g, '') // Fallback text version
+        text: htmlBody.replace(/<[^>]*>/g, '')
     };
 
     const info = await transporter.sendMail(mailOptions);
-    await createEmailAnalytics(trackingId, subject);
+
     console.log("Email sent successfully:", info.messageId);
     return info;
 }
