@@ -16,6 +16,7 @@ router.get("/track/:id", async (req, res) => {
       req.connection?.remoteAddress ||
       "unknown";
 
+
     const isProxy =
       userAgent.includes("GoogleImageProxy") ||
       userAgent.includes("AppleWebKit") && userAgent.includes("Apple Mail");
