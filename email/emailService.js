@@ -1,6 +1,6 @@
 require("dotenv").config();
 const transporter = require("./emailConfig");
-
+const { createEmailAnalytics } = require("../services/analyticsService");
 
 async function sendTrackedEmail(email, trackingId, subject, htmlBody) {
     // Create tracking pixel
@@ -19,6 +19,7 @@ async function sendTrackedEmail(email, trackingId, subject, htmlBody) {
     };
 
     const info = await transporter.sendMail(mailOptions);
+    await createEmailAnalytics(trackingId, subject);
     console.log("Email sent successfully:", info.messageId);
     return info;
 }

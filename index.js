@@ -3,13 +3,11 @@ const express = require("express");
 
 const trackingRoutes = require("./track/trackingRoutes");
 const emailRoutes = require("./email/emailRoutes");
-
 const app = express();
 app.use(express.json());
 
 app.use(trackingRoutes);
 app.use(emailRoutes);
-
 
 
 
