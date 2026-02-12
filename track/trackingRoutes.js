@@ -1,25 +1,49 @@
 const express = require("express");
 const router = express.Router();
 const { updateEmailOpen } = require("../services/analyticsService");
+
 router.get("/track/:id", async (req, res) => {
-  const id = req.params.id;
+  try {
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).send("Missing tracking ID");
+    }
+
+    const userAgent = req.headers["user-agent"] || "";
+    const ip =
+      req.headers["x-forwarded-for"] ||
+      req.connection?.remoteAddress ||
+      "unknown";
+
+    const isProxy =
+      userAgent.includes("GoogleImageProxy") ||
+      userAgent.includes("AppleWebKit") && userAgent.includes("Apple Mail");
+
+    console.log("Track hit:", id);
+    console.log("IP:", ip);
+    console.log("User-Agent:", userAgent);
+    console.log("Proxy detected:", isProxy);
+
+    await updateEmailOpen(id, {
+      userAgent: req.headers["user-agent"],
+      ip: req.headers["x-forwarded-for"],
+      isProxy: req.headers["user-agent"]?.includes("GoogleImageProxy")
+    });
 
 
-  await updateEmailOpen(id);
-  // 1×1 transparent GIF — no cache, always hit server
+  } catch (error) {
+    console.error("Tracking error:", error.message);
+    // do NOT break pixel response
+  }
+
+  // Always return pixel (even if error happens)
   res.set({
     "Content-Type": "image/gif",
-
-    // HTTP/1.1 cache control
-    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
-
-    // HTTP/1.0 backward compatibility
+    "Cache-Control":
+      "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
     "Pragma": "no-cache",
-
-    // Force expiration
     "Expires": "0",
-
-    // Prevent CDN caching (extra safety)
     "Surrogate-Control": "no-store"
   });
 
@@ -29,10 +53,11 @@ router.get("/track/:id", async (req, res) => {
       "base64"
     )
   );
-
 });
 
+/* Debug test route */
 router.get("/image", (req, res) => {
+  res.set("Content-Type", "image/svg+xml");
   res.send(`
     <svg width="300" height="100">
       <rect width="300" height="100" fill="blue"/>

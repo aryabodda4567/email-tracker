@@ -14,7 +14,6 @@ async function sendTrackedEmail(email, trackingId, subject, htmlBody) {
        style="display:none;" />
 `;
 
-    console.log(trackingPixel);
     const htmlWithTracking = `${htmlBody}${trackingPixel}`;
 
     const mailOptions = {

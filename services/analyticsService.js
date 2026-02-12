@@ -5,46 +5,56 @@ const { db, FieldValue } = require("../config/firebase");
  */
 async function createEmailAnalytics(id, subject = "") {
     if (!id) throw new Error("ID required");
+
     await db.collection("analytics").doc(id).set({
-        sentTime: new Date(),
+        sentTime: FieldValue.serverTimestamp(),
         isOpened: false,
         firstOpen: null,
         subject,
         views: []
     });
+
     return { success: true, id };
 }
 
 /**
  * Update analytics when email is opened
  * - sets isOpened true
- * - sets firstOpen only once
+ * - sets firstOpen only once (atomic)
  * - adds timestamp to views
+ * - safe if doc does not exist
  */
-async function updateEmailOpen(id) {
-    if (!id) throw new Error("ID required");
+async function updateEmailOpen(id, meta = {}) {
+    if (!id) return;
 
     const docRef = db.collection("analytics").doc(id);
-    const doc = await docRef.get();
 
-    if (!doc.exists) {
-        throw new Error("Analytics record not found");
-    }
+    await db.runTransaction(async (transaction) => {
+        const doc = await transaction.get(docRef);
 
-    const data = doc.data();
-    const now = new Date();
+        if (!doc.exists) {
+            console.log("Analytics record not found:", id);
+            return; // don't throw (pixel must not fail)
+        }
 
-    const updateData = {
-        isOpened: true,
-        views: FieldValue.arrayUnion(now)
-    };
+        const data = doc.data();
+        const now = new Date();
 
-    // set firstOpen only first time
-    if (!data.firstOpen) {
-        updateData.firstOpen = now;
-    }
+        const updateData = {
+            isOpened: true,
+            views: FieldValue.arrayUnion({
+                timestamp: now,
+                ...meta
+            })
+        };
 
-    await docRef.update(updateData);
+        // Set firstOpen only once (atomic inside transaction)
+        if (!data.firstOpen) {
+            updateData.firstOpen = now;
+        }
+
+        transaction.update(docRef, updateData);
+    });
 
     return { success: true, id };
 }
