@@ -3,7 +3,6 @@ const express = require("express");
 const router = express.Router();
 const { generateTrackingId } = require("../track/trackingUtils");
 const { sendTrackedEmail } = require("./emailService");
-const trackingDB = require("../track/trackingDB");
 
 router.post("/send-email", async (req, res) => {
     try {
@@ -18,10 +17,6 @@ router.post("/send-email", async (req, res) => {
 
         const trackingId = generateTrackingId();
 
-        trackingDB[trackingId] = {
-            email,
-            opened: false
-        };
 
         await sendTrackedEmail(email, trackingId, subject, htmlBody);
 

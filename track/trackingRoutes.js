@@ -1,18 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const trackingDB = require("./trackingDB");
-
+const { updateEmailOpen } = require("../services/analyticsService");
 router.get("/track/:id", async (req, res) => {
   const id = req.params.id;
 
-  if (id && trackingDB[id]) {
-    trackingDB[id].opened = true;
-    trackingDB[id].openedAt = new Date();
 
-    console.log("Email opened:", trackingDB[id]);
-
-  }
-
+  await updateEmailOpen(id);
   // 1×1 transparent GIF — no cache, always hit server
   res.set({
     "Content-Type": "image/gif",
