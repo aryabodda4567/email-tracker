@@ -8,11 +8,12 @@ async function sendTrackedEmail(email, trackingId, subject, htmlBody) {
     await createEmailAnalytics(trackingId, subject);
 
     const trackingPixel = `
-      <img src="${process.env.BASE_URL}/track?id=${trackingId}}"
-           width="1"
-           height="1"
-           style="display:none;" />
-    `;
+  <img src="${process.env.BASE_URL}/track/${trackingId}"
+       width="1"
+       height="1"
+       style="display:none;" />
+`;
+
     console.log(trackingPixel);
     const htmlWithTracking = `${htmlBody}${trackingPixel}`;
 
