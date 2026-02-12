@@ -8,6 +8,7 @@ async function createEmailAnalytics(id, subject = "") {
 
     await db.collection("analytics").doc(id).set({
         sentTime: FieldValue.serverTimestamp(),
+        mailSent: false,
         isOpened: false,
         firstOpen: null,
         subject,
@@ -51,8 +52,12 @@ async function updateEmailOpen(id, meta = {}) {
             views: FieldValue.arrayUnion(newView)
         };
 
+        // FIRST HIT
+        if (existingViews.length === 0) {
+            updateData.mailSent = true;
+        }
 
-
+        // SECOND HIT
         if (existingViews.length === 1 && !data.isOpened) {
             updateData.isOpened = true;
             updateData.firstOpen = now;
