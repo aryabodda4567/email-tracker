@@ -34,32 +34,68 @@ async function updateEmailOpen(id, meta = {}) {
 
         if (!doc.exists) {
             console.log("Analytics record not found:", id);
-            return; // don't throw (pixel must not fail)
+            return;
         }
 
         const data = doc.data();
         const now = new Date();
 
-        const updateData = {
-            isOpened: true,
-            views: FieldValue.arrayUnion({
-                timestamp: now,
-                ...meta
-            })
+        const existingViews = Array.isArray(data.views) ? data.views : [];
+
+        const newView = {
+            timestamp: now,
+            ...meta
         };
 
-        // Set firstOpen only once (atomic inside transaction)
-        if (!data.firstOpen) {
+        const updateData = {
+            views: FieldValue.arrayUnion(newView)
+        };
+
+
+
+        if (existingViews.length === 1 && !data.isOpened) {
+            updateData.isOpened = true;
             updateData.firstOpen = now;
         }
 
         transaction.update(docRef, updateData);
     });
 
-    return { success: true, id };
+    return { success: true };
 }
+
+
+
+/**
+ * Get email analytics metadata (excluding full views array)
+ * Includes viewsCount
+ */
+async function getEmailAnalyticsMeta(id) {
+    if (!id) throw new Error("ID required");
+
+    const doc = await db.collection("analytics").doc(id).get();
+
+    if (!doc.exists) {
+        return null;
+    }
+
+    const data = doc.data();
+
+    const viewsCount = Array.isArray(data.views) ? data.views.length : 0;
+
+    return {
+        id,
+        sentTime: data.sentTime || null,
+        isOpened: data.isOpened || false,
+        firstOpen: data.firstOpen || null,
+        subject: data.subject || "",
+        viewsCount
+    };
+}
+
 
 module.exports = {
     createEmailAnalytics,
-    updateEmailOpen
+    updateEmailOpen,
+    getEmailAnalyticsMeta
 };
