@@ -3,17 +3,19 @@ const { db, FieldValue } = require("../config/firebase");
 /**
  * Create email analytics record (when email sent)
  */
-async function createEmailAnalytics(id, subject = "", receiverEmail) {
+async function createEmailAnalytics(id, subject = "", receiverEmail = "") {
     if (!id) throw new Error("ID required");
 
     await db.collection("analytics").doc(id).set({
         sentTime: FieldValue.serverTimestamp(),
-        receiverEmail: receiverEmail,
-        mailSent: false,
+        receiverEmail,
+        mailSent: true,
         isOpened: false,
         firstOpen: null,
         subject,
-        views: []
+        totalViews: 0,
+        proxyViews: 0,
+        realViews: 0
     });
 
     return { success: true, id };
@@ -30,8 +32,13 @@ async function updateEmailOpen(id, meta = {}) {
     if (!id) return;
 
     const docRef = db.collection("analytics").doc(id);
+    const viewsRef = docRef.collection("views");
+
+    const now = new Date();
+    const isProxy = !!meta.isProxy;
 
     await db.runTransaction(async (transaction) => {
+
         const doc = await transaction.get(docRef);
 
         if (!doc.exists) {
@@ -40,26 +47,24 @@ async function updateEmailOpen(id, meta = {}) {
         }
 
         const data = doc.data();
-        const now = new Date();
 
-        const existingViews = Array.isArray(data.views) ? data.views : [];
+        // 1️ Add view event (subcollection)
+        const newViewRef = viewsRef.doc();
 
-        const newView = {
+        transaction.set(newViewRef, {
             timestamp: now,
             ...meta
-        };
+        });
 
+        // 2️ Update counters
         const updateData = {
-            views: FieldValue.arrayUnion(newView)
+            totalViews: FieldValue.increment(1),
+            proxyViews: isProxy ? FieldValue.increment(1) : FieldValue.increment(0),
+            realViews: !isProxy ? FieldValue.increment(1) : FieldValue.increment(0)
         };
 
-        // FIRST HIT
-        if (existingViews.length === 0) {
-            updateData.mailSent = true;
-        }
-
-        // SECOND HIT
-        if (existingViews.length === 1 && !data.isOpened) {
+        // FIRST REAL OPEN
+        if (!data.isOpened) {
             updateData.isOpened = true;
             updateData.firstOpen = now;
         }
@@ -81,13 +86,9 @@ async function getEmailAnalyticsMeta(id) {
 
     const doc = await db.collection("analytics").doc(id).get();
 
-    if (!doc.exists) {
-        return null;
-    }
+    if (!doc.exists) return null;
 
     const data = doc.data();
-
-    const viewsCount = Array.isArray(data.views) ? data.views.length : 0;
 
     return {
         id,
@@ -95,9 +96,12 @@ async function getEmailAnalyticsMeta(id) {
         isOpened: data.isOpened || false,
         firstOpen: data.firstOpen || null,
         subject: data.subject || "",
-        viewsCount
+        totalViews: data.totalViews || 0,
+        proxyViews: data.proxyViews || 0,
+        realViews: data.realViews || 0
     };
 }
+
 
 
 module.exports = {
