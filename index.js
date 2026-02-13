@@ -20,6 +20,11 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Serve static files (css, js, html) from /public
+app.use(express.static("public"));
+
+// Redirect root to dashboard
+app.get("/", (req, res) => res.redirect("/html/dashboard.html"));
 
 app.use(trackingRoutes);
 app.use(emailRoutes);

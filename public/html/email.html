@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender — Email Tracker</title>
+    <link rel="stylesheet" href="../css/common.css">
+</head>
+
+<body>
+
+    <nav class="nav-bar">
+        <a href="email.html" class="active">✉ Send</a>
+        <a href="dashboard.html">📊 Dashboard</a>
+    </nav>
+
+    <h1>Email Sender</h1>
+
+    <div class="card">
+        <label>Recipient Email:</label>
+        <input type="email" id="email" placeholder="Enter recipient email" required>
+
+        <label>Subject:</label>
+        <input type="text" id="subject" placeholder="Enter subject" required>
+
+        <label>HTML Body:</label>
+        <textarea id="htmlBody" placeholder="Enter email body exactly as you want it sent…"></textarea>
+
+        <button onclick="sendEmail()">Send Email</button>
+    </div>
+
+    <pre id="response" class="response"></pre>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/email.js"></script>
+
+</body>
+
+</html>

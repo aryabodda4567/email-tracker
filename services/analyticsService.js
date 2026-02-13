@@ -103,10 +103,94 @@ async function getEmailAnalyticsMeta(id) {
     };
 }
 
+/**
+ * Fetch metadata of all emails
+ * - ordered by latest sentTime first
+ * - lightweight (no views subcollection read)
+ */
+async function getAllEmailAnalyticsMeta() {
+
+    const snapshot = await db
+        .collection("analytics")
+        .orderBy("sentTime", "desc")
+        .get();
+
+    if (snapshot.empty) return [];
+
+    const result = [];
+
+    snapshot.forEach(doc => {
+        const data = doc.data();
+
+        result.push({
+            id: doc.id,
+            subject: data.subject || "",
+            receiverEmail: data.receiverEmail || "",
+            sentTime: data.sentTime || null,
+            viewsCount: data.viewsCount || 0,
+            isOpened: data.isOpened || false,
+            firstOpen: data.firstOpen || null
+        });
+    });
+
+    return result;
+}
+
+/**
+ * Get complete analytics of a single email
+ * - returns full meta data
+ * - returns views with only timestamp
+ */
+async function getFullEmailAnalytics(id) {
+    if (!id) throw new Error("ID required");
+
+    const docRef = db.collection("analytics").doc(id);
+    const viewsRef = docRef.collection("views");
+
+    // Fetch meta document
+    const doc = await docRef.get();
+
+    if (!doc.exists) return null;
+
+    const data = doc.data();
+
+    // Fetch views (ordered oldest → latest)
+    const viewsSnapshot = await viewsRef
+        .orderBy("timestamp", "asc")
+        .get();
+
+    const views = [];
+
+    viewsSnapshot.forEach(v => {
+        const viewData = v.data();
+
+        views.push({
+            time: viewData.timestamp || null
+        });
+    });
+
+    return {
+        id,
+        subject: data.subject || "",
+        receiverEmail: data.receiverEmail || "",
+        sentTime: data.sentTime || null,
+        mailSent: data.mailSent || false,
+        isOpened: data.isOpened || false,
+        firstOpen: data.firstOpen || null,
+        viewsCount: data.viewsCount || 0,
+        views
+    };
+}
+
+
+
 
 
 module.exports = {
     createEmailAnalytics,
     updateEmailOpen,
-    getEmailAnalyticsMeta
+    getEmailAnalyticsMeta,
+    getAllEmailAnalyticsMeta,
+    getFullEmailAnalytics
 };
+
