@@ -8,20 +8,32 @@ async function sendTrackedEmail(email, trackingId, subject, htmlBody) {
     await createEmailAnalytics(trackingId, subject);
 
     const trackingPixel = `
-  <img src="${process.env.BASE_URL}/track/${trackingId}"
-       width="1"
-       height="1"
-       style="display:none;" />
+<img src="${process.env.BASE_URL}/track/${trackingId}"
+     width="1"
+     height="1"
+     style="display:none;" />
 `;
 
-    const htmlWithTracking = `${htmlBody}${trackingPixel}`;
+    // Convert plain text newlines to <br>
+    const formattedBody = htmlBody
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
+
+    const htmlWithTracking = `
+<div style="font-family: Arial, sans-serif;">
+    ${formattedBody}
+</div>
+${trackingPixel}
+`;
 
     const mailOptions = {
         from: process.env.SENDER_EMAIL,
         to: email,
         subject: subject,
         html: htmlWithTracking,
-        text: htmlBody.replace(/<[^>]*>/g, '')
+        text: htmlBody // keep original for text fallback
     };
 
     const info = await transporter.sendMail(mailOptions);
