@@ -6,14 +6,14 @@ const emailRoutes = require("./email/emailRoutes");
 
 const app = express();
 
-// app.use(cors());
-app.use(express.json());
-
 // Allow ALL origins (testing only)
 app.use(cors());
 
 // Optional but good practice for preflight
 app.options("*", cors());
+
+app.use(express.json());
+
 
 app.use(trackingRoutes);
 app.use(emailRoutes);
