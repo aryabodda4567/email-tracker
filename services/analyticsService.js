@@ -3,11 +3,12 @@ const { db, FieldValue } = require("../config/firebase");
 /**
  * Create email analytics record (when email sent)
  */
-async function createEmailAnalytics(id, subject = "") {
+async function createEmailAnalytics(id, subject = "", receiverEmail) {
     if (!id) throw new Error("ID required");
 
     await db.collection("analytics").doc(id).set({
         sentTime: FieldValue.serverTimestamp(),
+        receiverEmail: receiverEmail,
         mailSent: false,
         isOpened: false,
         firstOpen: null,

@@ -5,7 +5,7 @@ const { createEmailAnalytics } = require("../services/analyticsService");
 async function sendTrackedEmail(email, trackingId, subject, htmlBody) {
 
     // Create analytics FIRST
-    await createEmailAnalytics(trackingId, subject);
+    await createEmailAnalytics(trackingId, subject, email);
 
     const trackingPixel = `
 <img src="${process.env.BASE_URL}/track/${trackingId}"
