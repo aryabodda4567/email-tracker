@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-    origin: "http://localhost:5500", // your frontend origin
+    origin: "http://127.0.0.1:5500", // your frontend origin
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: ["Content-Type"]
 }));
