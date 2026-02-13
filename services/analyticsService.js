@@ -3,23 +3,22 @@ const { db, FieldValue } = require("../config/firebase");
 /**
  * Create email analytics record (when email sent)
  */
-async function createEmailAnalytics(id, subject = "", receiverEmail = "") {
+async function createEmailAnalytics(id, subject = "", receiverEmail) {
     if (!id) throw new Error("ID required");
 
     await db.collection("analytics").doc(id).set({
         sentTime: FieldValue.serverTimestamp(),
         receiverEmail,
-        mailSent: true,
+        mailSent: false,
         isOpened: false,
         firstOpen: null,
         subject,
-        totalViews: 0,
-        proxyViews: 0,
-        realViews: 0
+        viewsCount: 0 // replaces array
     });
 
     return { success: true, id };
 }
+
 
 /**
  * Update analytics when email is opened
@@ -34,9 +33,6 @@ async function updateEmailOpen(id, meta = {}) {
     const docRef = db.collection("analytics").doc(id);
     const viewsRef = docRef.collection("views");
 
-    const now = new Date();
-    const isProxy = !!meta.isProxy;
-
     await db.runTransaction(async (transaction) => {
 
         const doc = await transaction.get(docRef);
@@ -47,24 +43,29 @@ async function updateEmailOpen(id, meta = {}) {
         }
 
         const data = doc.data();
+        const now = new Date();
 
-        // 1️ Add view event (subcollection)
+        const existingViews = data.viewsCount || 0;
+
         const newViewRef = viewsRef.doc();
 
+        // Add view event (same as old array push)
         transaction.set(newViewRef, {
             timestamp: now,
             ...meta
         });
 
-        // 2️ Update counters
         const updateData = {
-            totalViews: FieldValue.increment(1),
-            proxyViews: isProxy ? FieldValue.increment(1) : FieldValue.increment(0),
-            realViews: !isProxy ? FieldValue.increment(1) : FieldValue.increment(0)
+            viewsCount: FieldValue.increment(1)
         };
 
-        // FIRST REAL OPEN
-        if (!data.isOpened) {
+        // FIRST HIT (same logic)
+        if (existingViews === 0) {
+            updateData.mailSent = true;
+        }
+
+        // SECOND HIT (same logic)
+        if (existingViews === 1 && !data.isOpened) {
             updateData.isOpened = true;
             updateData.firstOpen = now;
         }
