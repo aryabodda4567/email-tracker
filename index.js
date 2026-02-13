@@ -9,11 +9,11 @@ const app = express();
 // app.use(cors());
 app.use(express.json());
 
-app.use(cors({
-    origin: "http://127.0.0.1:5500", // your frontend origin
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    allowedHeaders: ["Content-Type"]
-}));
+// Allow ALL origins (testing only)
+app.use(cors());
+
+// Optional but good practice for preflight
+app.options("*", cors());
 
 app.use(trackingRoutes);
 app.use(emailRoutes);
