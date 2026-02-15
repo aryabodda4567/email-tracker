@@ -61,8 +61,10 @@ function formatTimestamp(ts, fallback = "—") {
  * @param  {string} url
  * @return {Promise<any>}
  */
-async function fetchJSON(url) {
-    const res = await fetch(url);
+async function fetchJSON(url, options = {}) {
+    // Use authFetch if available (loaded by auth.js on protected pages)
+    const fetchFn = window.authFetch || fetch;
+    const res = await fetchFn(url, options);
 
     if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -70,6 +72,20 @@ async function fetchJSON(url) {
     }
 
     return res.json();
+}
+
+/**
+ * Thin POST wrapper using authFetch.
+ * @param  {string} url
+ * @param  {Object} body
+ * @return {Promise<any>}
+ */
+async function postJSON(url, body) {
+    return fetchJSON(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+    });
 }
 
 /**

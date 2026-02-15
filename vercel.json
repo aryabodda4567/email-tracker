@@ -12,6 +12,10 @@
     ],
     "routes": [
         {
+            "src": "/html/login.html",
+            "dest": "/public/html/login.html"
+        },
+        {
             "src": "/html/(.*)",
             "dest": "/public/html/$1"
         },
@@ -27,7 +31,7 @@
             "src": "^/$",
             "status": 301,
             "headers": {
-                "Location": "/html/dashboard.html"
+                "Location": "/html/login.html"
             }
         },
         {

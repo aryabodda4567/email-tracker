@@ -1,5 +1,4 @@
 const express = require("express");
-const router = express.Router();
 const {
   updateEmailOpen,
   getEmailAnalyticsMeta,
@@ -8,7 +7,7 @@ const {
 } = require("../services/analyticsService");
 
 // ─────────────────────────────────────────────────────────
-//  Tracking Pixel Endpoint
+//  Tracking Pixel Handler (PUBLIC — no auth required)
 // ─────────────────────────────────────────────────────────
 
 /**
@@ -21,7 +20,7 @@ const {
  * @param {string} req.params.id - Unique email tracking ID
  * @returns {Buffer} 1×1 transparent GIF (always, even on error)
  */
-router.get("/track/:id", async (req, res) => {
+async function handleTrackingPixel(req, res) {
   try {
     const id = req.params.id;
 
@@ -73,30 +72,20 @@ router.get("/track/:id", async (req, res) => {
       "base64"
     )
   );
-});
+}
 
 // ─────────────────────────────────────────────────────────
-//  Analytics API Endpoints
+//  Analytics API Router (PROTECTED — JWT auth required)
 // ─────────────────────────────────────────────────────────
+
+const analyticsRouter = express.Router();
 
 /**
  * GET /analytics/email/:id
  *
  * Returns lightweight metadata for a single tracked email.
- * Does NOT include the full views sub-collection — use the
- * /analytics/email/:id/full endpoint for that.
- *
- * Uses: getEmailAnalyticsMeta(id)
- *
- * @param  {string} req.params.id - Unique email tracking ID
- * @returns {Object} JSON with id, sentTime, isOpened, firstOpen,
- *                   subject, totalViews, proxyViews, realViews
- *
- * @example
- *  GET /analytics/email/abc123
- *  → { id, sentTime, isOpened, firstOpen, subject, ... }
  */
-router.get("/analytics/email/:id", async (req, res) => {
+analyticsRouter.get("/analytics/email/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -117,20 +106,9 @@ router.get("/analytics/email/:id", async (req, res) => {
  * GET /analytics/emails
  *
  * Returns metadata of ALL tracked emails, ordered by latest
- * sentTime first.  This is a lightweight listing — no views
- * sub-collection data is included.
- *
- * Uses: getAllEmailAnalyticsMeta()
- *
- * @returns {Array<Object>} JSON array of email metadata objects,
- *          each containing id, subject, sentTime, viewsCount,
- *          isOpened, firstOpen
- *
- * @example
- *  GET /analytics/emails
- *  → [ { id, subject, sentTime, viewsCount, ... }, ... ]
+ * sentTime first.
  */
-router.get("/analytics/emails", async (req, res) => {
+analyticsRouter.get("/analytics/emails", async (req, res) => {
   try {
     const emails = await getAllEmailAnalyticsMeta();
 
@@ -145,21 +123,9 @@ router.get("/analytics/emails", async (req, res) => {
  * GET /analytics/email/:id/full
  *
  * Returns the COMPLETE analytics for a single email, including
- * every individual view event from the views sub-collection
- * (ordered oldest → newest).
- *
- * Uses: getFullEmailAnalytics(id)
- *
- * @param  {string} req.params.id - Unique email tracking ID
- * @returns {Object} JSON with id, subject, receiverEmail, sentTime,
- *                   mailSent, isOpened, firstOpen, viewsCount,
- *                   and views[] (each entry has a time field)
- *
- * @example
- *  GET /analytics/email/abc123/full
- *  → { id, subject, receiverEmail, ..., views: [{ time }, ...] }
+ * every individual view event from the views sub-collection.
  */
-router.get("/analytics/email/:id/full", async (req, res) => {
+analyticsRouter.get("/analytics/email/:id/full", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -181,7 +147,7 @@ router.get("/analytics/email/:id/full", async (req, res) => {
 // ─────────────────────────────────────────────────────────
 
 /** GET /image — returns a simple SVG for manual testing */
-router.get("/image", (req, res) => {
+analyticsRouter.get("/image", (req, res) => {
   res.set("Content-Type", "image/svg+xml");
   res.send(`
     <svg width="300" height="100">
@@ -193,5 +159,4 @@ router.get("/image", (req, res) => {
   `);
 });
 
-module.exports = router;
-
+module.exports = { handleTrackingPixel, analyticsRouter };

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Email Tracker</title>
+    <link rel="stylesheet" href="../css/common.css">
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-icon">🔒</div>
+            <h1 class="login-title">Email Tracker</h1>
+            <p class="login-subtitle">Sign in to continue</p>
+
+            <form id="loginForm" autocomplete="off">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required maxlength="128"
+                    autocomplete="username">
+
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required maxlength="256"
+                    autocomplete="current-password">
+
+                <button type="submit" id="loginBtn">Sign In</button>
+            </form>
+
+            <div id="error" class="login-error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="../js/login.js"></script>
+
+</body>
+
+</html>

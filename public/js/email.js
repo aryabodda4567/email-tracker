@@ -11,21 +11,18 @@ function sendEmail() {
     const subject = document.getElementById("subject").value;
     const htmlBody = document.getElementById("htmlBody").value;
 
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    const raw = JSON.stringify({ email, subject, htmlBody });
-
     const requestOptions = {
         method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, subject, htmlBody }),
     };
 
     document.getElementById("response").textContent = "Sending…";
 
-    fetch("/send-email", requestOptions)
+    // Use authFetch for authenticated requests
+    const fetchFn = window.authFetch || fetch;
+
+    fetchFn("/send-email", requestOptions)
         .then((response) => response.text())
         .then((result) => {
             document.getElementById("response").textContent = result;

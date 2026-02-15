@@ -33,7 +33,9 @@ a:hover {
 
 /* ── Typography ────────────────────────────────────────── */
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     color: #ffffff;
     margin-bottom: 8px;
 }
@@ -280,7 +282,9 @@ pre.response {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .error-msg {
@@ -322,7 +326,120 @@ pre.response {
     font-size: 0.8rem;
 }
 
-.mt-8 { margin-top: 8px; }
-.mt-16 { margin-top: 16px; }
-.mt-24 { margin-top: 24px; }
-.mb-16 { margin-bottom: 16px; }
+.mt-8 {
+    margin-top: 8px;
+}
+
+.mt-16 {
+    margin-top: 16px;
+}
+
+.mt-24 {
+    margin-top: 24px;
+}
+
+.mb-16 {
+    margin-bottom: 16px;
+}
+
+/* ── Login Page ───────────────────────────────────────── */
+
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+}
+
+.login-card {
+    background: #1a1d28;
+    border: 1px solid #2a2d3a;
+    border-radius: 14px;
+    padding: 40px 36px 32px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.login-icon {
+    font-size: 2.8rem;
+    margin-bottom: 8px;
+}
+
+.login-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    border: none;
+    padding: 0;
+    margin-bottom: 4px;
+}
+
+.login-subtitle {
+    color: #6b7080;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+}
+
+.login-card label {
+    text-align: left;
+}
+
+.login-card button {
+    margin-top: 24px;
+    padding: 14px;
+    font-size: 1.05rem;
+}
+
+.login-error {
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 8px;
+    color: #f87171;
+    font-size: 0.85rem;
+}
+
+/* ── Shake Animation ──────────────────────────────────── */
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-4px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* ── Nav Logout ───────────────────────────────────────── */
+
+.nav-logout {
+    margin-left: auto;
+    color: #f87171 !important;
+    font-size: 0.85rem;
+}
+
+.nav-logout:hover {
+    color: #fca5a5 !important;
+    text-decoration: none !important;
+}

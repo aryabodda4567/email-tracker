@@ -13,6 +13,7 @@
     <nav class="nav-bar">
         <a href="email.html">✉ Send</a>
         <a href="dashboard.html" class="active">📊 Dashboard</a>
+        <a href="#" class="nav-logout" onclick="logout(); return false;">🚪 Logout</a>
     </nav>
 
     <h1>Tracked Emails</h1>
@@ -21,6 +22,7 @@
     <!-- Table or loading/error goes here -->
     <div id="content"></div>
 
+    <script src="../js/auth.js"></script>
     <script src="../js/common.js"></script>
     <script src="../js/dashboard.js"></script>
 
